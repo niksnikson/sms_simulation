@@ -1,0 +1,51 @@
+version: '3.8'
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    networks:
+      - sms_net
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+
+  producer:
+    build: .
+    container_name: producer
+    networks:
+      - sms_net
+    environment:
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    command: ["python", "producer.py"]
+
+  sender:
+    build: .
+    networks:
+      - sms_net
+    environment:
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    command: ["python", "sender.py"]
+    deploy:
+      replicas: 3
+
+  monitor:
+    build: .
+    container_name: monitor
+    networks:
+      - sms_net
+    environment:
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    command: ["python", "monitor.py"]
+
+networks:
+  sms_net:
+    driver: bridge
