@@ -12,9 +12,6 @@ load_dotenv()
 def send_message(ch, method, properties, body, r, mean_time, failure_rate):
     message = json.loads(body)
 
-    mean_time = float(os.getenv('SENDER_MEAN_TIME', mean_time))
-    failure_rate = float(os.getenv('SENDER_FAILURE_RATE', failure_rate))
-
     start_time = time.time()
     time.sleep(random.expovariate(1 / mean_time))
     processing_time = time.time() - start_time
