@@ -1,5 +1,5 @@
 # Variables
-SENDER_COUNT ?= 1
+SENDER_COUNT ?= 3
 MEAN_TIME ?= 1.5
 FAIL_RATE ?= 0.2
 
