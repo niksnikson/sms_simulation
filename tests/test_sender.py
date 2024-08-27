@@ -24,15 +24,13 @@ def test_send_message_success(mock_redis, mock_pika):
     r = mock_redis.return_value
 
     # Act
-    sender.send_message(mock_channel, mock_method, None, body, r, 1.0, 0.1)
+    sender.send_message(mock_channel, mock_method, None, body, r, 1.0, 0)
 
     # Assert
     r.incr.assert_any_call('sent_count')
     mock_channel.basic_ack.assert_called_once_with(delivery_tag='test_delivery_tag')
 
-def test_send_message_failure(mock_redis, mock_pika, monkeypatch):
-    # Arrange
-    monkeypatch.setenv('SENDER_FAILURE_RATE', '1')  # Force failure by setting the failure rate to 100%
+def test_send_message_failure(mock_redis, mock_pika):
     
     mock_channel = MagicMock()
     mock_method = MagicMock()
