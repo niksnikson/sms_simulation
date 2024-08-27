@@ -8,7 +8,7 @@ WORKDIR /usr/src/app
 COPY . .
 
 # Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir pika python-dotenv
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Make port 5672 and 15672 available to the world outside this container
 EXPOSE 5672 15672

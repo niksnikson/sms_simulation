@@ -12,6 +12,14 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
 
+  redis:
+    image: redis:alpine
+    container_name: redis
+    networks:
+      - sms_net
+    ports:
+      - "6379:6379"
+
   producer:
     build: .
     container_name: producer
@@ -24,16 +32,14 @@ services:
     command: ["python", "producer.py"]
 
   sender:
-    build: .
-    networks:
-      - sms_net
-    environment:
-      - PYTHONUNBUFFERED=1
-    env_file:
-      - .env
-    command: ["python", "sender.py"]
-    deploy:
-      replicas: 3
+      build: .
+      networks:
+        - sms_net
+      environment:
+        - PYTHONUNBUFFERED=1
+      command: ["python", "sender.py"]
+      deploy:
+        replicas: 3
 
   monitor:
     build: .

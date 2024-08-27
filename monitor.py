@@ -1,51 +1,27 @@
-import pika
 import time
-import json
 import os
+import redis
 from dotenv import load_dotenv
 
 load_dotenv()
 
-def monitor_progress(interval=5):
-    credentials = pika.PlainCredentials(
-        os.getenv('RABBITMQ_USER'), os.getenv('RABBITMQ_PASSWORD')
-    )
-    connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host=os.getenv('RABBITMQ_HOST'), credentials=credentials)
-    )
-    channel = connection.channel()
+def monitor_progress(interval=5, iterations=None):
+    r = redis.Redis(host=os.getenv('REDIS_HOST', 'redis'), port=6379, db=0)
 
-    channel.queue_declare(queue='sms_queue', durable=True)
+    current_iteration = 0
+    while iterations is None or current_iteration < iterations:
+        sent_count = int(r.get('sent_count') or 0)
+        failed_count = int(r.get('failed_count') or 0)
+        total_time = float(r.get('total_time') or 0.0)
 
-    total_sent = 0
-    total_failed = 0
-    total_time = 0
+        average_time = total_time / sent_count if sent_count > 0 else 0
 
-    while True:
-        queue_state = channel.queue_declare(queue='sms_queue', durable=True, passive=True)
-        message_count = queue_state.method.message_count
-
-        method_frame, header_frame, body = channel.basic_get('sms_queue', auto_ack=False)
-        if method_frame:
-            message = json.loads(body)
-            total_sent += 1
-
-            processing_time = message.get('processing_time', 0)
-            total_time += processing_time
-
-            if message.get('failed', False):
-                total_failed += 1
-
-            channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-
-        average_time = total_time / total_sent if total_sent > 0 else 0
-
-        print(f"Messages in queue: {message_count}")
-        print(f"Total messages sent: {total_sent}")
-        print(f"Total messages failed: {total_failed}")
+        print(f"Total messages sent: {sent_count}")
+        print(f"Total messages failed: {failed_count}")
         print(f"Average time per message: {average_time:.2f} seconds")
 
         time.sleep(interval)
+        current_iteration += 1
 
 if __name__ == "__main__":
     interval = int(os.getenv('MONITOR_INTERVAL', 5))

@@ -1,0 +1,5 @@
+pika
+redis
+python-dotenv
+pytest
+coverage
