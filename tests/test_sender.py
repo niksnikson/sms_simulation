@@ -24,7 +24,7 @@ def test_send_message_success(mock_redis, mock_pika):
     r = mock_redis.return_value
 
     # Act
-    sender.send_message(mock_channel, mock_method, None, body, r, 1.0, 0.1)
+    sender.send_message(mock_channel, mock_method, None, body, r, 1.0, 1.0)
 
     # Assert
     r.incr.assert_any_call('sent_count')
